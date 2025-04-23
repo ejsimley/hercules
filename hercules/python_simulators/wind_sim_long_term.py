@@ -59,6 +59,8 @@ class WindSimLongTerm:
             df_wi = pd.read_csv(self.wind_input_filename)
         elif self.wind_input_filename.endswith(".p"):
             df_wi = pd.read_pickle(self.wind_input_filename)
+        elif (self.wind_input_filename.endswith(".f")) | (self.wind_input_filename.endswith(".ftr")):
+            df_wi = pd.read_feather(self.wind_input_filename)
         else:
             raise ValueError("Wind input file must be a .csv or .p file")
 
@@ -123,30 +125,50 @@ class WindSimLongTerm:
         self.derating_buffer[0, :] = 1e12
 
         # Convert the wind directions and wind speeds and ti to simply numpy matrices
-        self.wd_mat = df_wi[[f"wd_{t_idx:03d}" for t_idx in range(self.n_turbines)]].to_numpy()
+        # Starting with wind speeds
+        
         self.ws_mat = df_wi[[f"ws_{t_idx:03d}" for t_idx in range(self.n_turbines)]].to_numpy()
-        self.ti_mat = df_wi[[f"ti_{t_idx:03d}" for t_idx in range(self.n_turbines)]].to_numpy()
-
-        # Compute the turbine-averaged wind directions (axis = 1) using circmean
-        self.wd_mat_mean = np.apply_along_axis(
-            lambda x: circmean(x, high=360.0, low=0.0, nan_policy="omit"), axis=1, arr=self.wd_mat
-        )
 
         # Compute the turbine averaged wind speeds (axis = 1) using mean
         self.ws_mat_mean = np.mean(self.ws_mat, axis=1)
 
-        # Compute the turbine averaged turbulence intensities (axis = 1) using mean
-        self.ti_mat_mean = np.mean(self.ti_mat, axis=1)
-
-        # Get the initial wind speeds and directions per turbine
-        self.initial_wind_directions = self.wd_mat[self.start_idx, :]
         self.initial_wind_speeds = self.ws_mat[self.start_idx, :]
-        self.initial_tis = self.ti_mat[self.start_idx, :]
+        self.floris_wind_speed = self.ws_mat_mean[self.start_idx]
+        
+        # Now the wind directions
+        if "wd_000" in df_wi.columns:
+            self.wd_mat = df_wi[[f"wd_{t_idx:03d}" for t_idx in range(self.n_turbines)]].to_numpy()
+            
+            # Compute the turbine-averaged wind directions (axis = 1) using circmean
+            self.wd_mat_mean = np.apply_along_axis(
+                lambda x: circmean(x, high=360.0, low=0.0, nan_policy="omit"), axis=1, arr=self.wd_mat
+            )
+
+            self.initial_wind_directions = self.wd_mat[self.start_idx, :]
+        elif "wd_mean" in df_wi.columns:
+            self.wd_mat_mean = df_wi["wd_mean"].values
 
         # Compute the initial floris wind direction and wind speed as at the start index
         self.floris_wind_direction = self.wd_mat_mean[self.start_idx]
-        self.floris_wind_speed = self.ws_mat_mean[self.start_idx]
-        self.floris_ti = self.ti_mat_mean[self.start_idx]
+        
+        if "ti_000" in df_wi.columns:
+            self.ti_mat = df_wi[[f"ti_{t_idx:03d}" for t_idx in range(self.n_turbines)]].to_numpy()
+
+            # Compute the turbine averaged turbulence intensities (axis = 1) using mean
+            self.ti_mat_mean = np.mean(self.ti_mat, axis=1)
+
+            self.initial_tis = self.ti_mat[self.start_idx, :]
+
+            self.floris_ti = self.ti_mat_mean[self.start_idx]
+
+        else:
+            self.ti_mat_mean = 0.08 * np.ones_like(self.ws_mat_mean)
+            self.floris_ti = 0.08 * self.ti_mat_mean[self.start_idx]
+
+
+
+        
+
         self.floris_derating = np.nanmean(self.derating_buffer, axis=0)
 
         # Iniialize the wake deficits
