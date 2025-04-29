@@ -84,8 +84,8 @@ class EmulatorNoHelics:
         # Interpolate the external data according to time.
         # Goes to 1 time step past stoptime specified in the input file.
         times = np.arange(
-            self.helics_config_dict["starttime"],
-            self.helics_config_dict["stoptime"] + (2 * self.dt),
+            self.starttime,
+            self.endtime + (2 * self.dt),
             self.dt,
         )
         self.external_data_all["time"] = times
