@@ -42,9 +42,6 @@ class EmulatorNoHelics:
         self.csv_buffer_size = 1000
         self.csv_buffer = []
 
-        # Save time step
-        self.dt = input_dict["dt"]
-
         # How often to update the user on current emulator time
         self.time_log_interval = 600  # seconds
         self.last_log_time = 0
