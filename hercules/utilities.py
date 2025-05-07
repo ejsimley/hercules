@@ -130,6 +130,16 @@ def interpolate_df(df, new_time):
     result = pd.DataFrame({"time": new_time})
     for col in df.columns:
         if col != "time":
-            f = interp1d(df["time"].values, df[col].values, bounds_error=True)
-            result[col] = f(new_time)
+            # Check if column contains datetime values
+            if pd.api.types.is_datetime64_any_dtype(df[col]):
+                # Convert datetime to timestamps (float) for interpolation
+                timestamps = df[col].view("int64") / 10**9  # nanoseconds to seconds
+                f = interp1d(df["time"].values, timestamps, bounds_error=True)
+                interpolated_timestamps = f(new_time)
+                # Convert timestamps back to datetime
+                result[col] = pd.to_datetime(interpolated_timestamps, unit="s", utc=True)
+            else:
+                # Standard interpolation for non-datetime columns
+                f = interp1d(df["time"].values, df[col].values, bounds_error=True)
+                result[col] = f(new_time)
     return result
