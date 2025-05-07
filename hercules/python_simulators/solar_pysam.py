@@ -12,7 +12,7 @@ from hercules.tools.Pvsamv1Tools import size_electrical_parameters
 
 
 class SolarPySAM:
-    def __init__(self, input_dict, dt):
+    def __init__(self, input_dict, dt, starttime, endtime):
 
         # get pysam model from input file
         if "pysam_model" in input_dict:
