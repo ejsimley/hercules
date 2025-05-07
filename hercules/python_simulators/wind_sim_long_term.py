@@ -95,7 +95,7 @@ class WindSimLongTerm:
 
         # If time_utc is in the file, convert it to a datetime
         if "time_utc" in df_wi.columns:
-            df_wi["Timestamp"] = pd.to_datetime(df_wi["time_utc"], format="ISO8601", utc=True)
+            df_wi["time_utc"] = pd.to_datetime(df_wi["time_utc"], format="ISO8601", utc=True)
 
         # Determine the dt implied by the weather file
         self.dt_wi = df_wi["time"][1] - df_wi["time"][0]
@@ -170,7 +170,7 @@ class WindSimLongTerm:
                 arr=self.wd_mat,
             )
 
-            self.initial_wind_directions = self.wd_mat[self.start_idx, :]
+            self.initial_wind_directions = self.wd_mat[0, :]
         elif "wd_mean" in df_wi.columns:
             self.wd_mat_mean = df_wi["wd_mean"].values
 
