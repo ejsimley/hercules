@@ -13,7 +13,7 @@ from hercules.utilities import interpolate_df
 
 
 class SolarPySAM:
-    def __init__(self, input_dict, dt, starttime=None, endtime=None):
+    def __init__(self, input_dict, dt, starttime, endtime):
         # Check if log_file_name is defined in the input_dict
         if "log_file_name" in input_dict:
             self.log_file_name = input_dict["log_file_name"]
