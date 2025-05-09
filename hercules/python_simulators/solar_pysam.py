@@ -50,18 +50,33 @@ class SolarPySAM:
         # Compute the number of time steps
         self.n_steps = int((self.endtime - self.starttime) / self.dt)
 
-        # load weather data into df_solar
-        if input_dict["solar_input_filename"]:  # using a weather file
-            if input_dict["solar_input_filename"].endswith(".csv"):
-                df_solar = pd.read_csv(input_dict["solar_input_filename"])
-            elif input_dict["solar_input_filename"].endswith(".p"):
-                df_solar = pd.read_pickle(input_dict["solar_input_filename"])
-            elif (input_dict["solar_input_filename"].endswith(".f")) | (
-                input_dict["solar_input_filename"].endswith(".ftr")
-            ):
-                df_solar = pd.read_feather(input_dict["solar_input_filename"])
-        else:  # using an input dictionary
-            df_solar = pd.DataFrame.from_dict(input_dict["weather_data_input"])
+        # Check that either
+        # 1. There is solar_input_filename that is not None and no weather_data_input dictionary
+        #    or
+        # 2. There is a weather_data_input dictionary and either:
+        #       solar_input_filename is not in input_dict or is none
+        if ("solar_input_filename" in input_dict) and (input_dict["solar_input_filename"] is not None):
+            if "weather_data_input" in input_dict:
+                raise ValueError(
+                    "Cannot have both solar_input_filename and weather_data_input in input_dict"
+                )
+            else:
+                if input_dict["solar_input_filename"].endswith(".csv"):
+                    df_solar = pd.read_csv(input_dict["solar_input_filename"])
+                elif input_dict["solar_input_filename"].endswith(".p"):
+                    df_solar = pd.read_pickle(input_dict["solar_input_filename"])
+                elif (input_dict["solar_input_filename"].endswith(".f")) | (
+                    input_dict["solar_input_filename"].endswith(".ftr")
+                ):
+                    df_solar = pd.read_feather(input_dict["solar_input_filename"])
+        else:
+            if "weather_data_input" not in input_dict:
+                raise ValueError(
+                    "Must have either solar_input_filename or weather_data_input in input_dict"
+                )
+            else:
+                df_solar = pd.DataFrame.from_dict(input_dict["weather_data_input"])
+
 
         # Make sure the df_wi contains a column called "time"
         if "time" not in df_solar.columns:
@@ -72,8 +87,8 @@ class SolarPySAM:
             raise ValueError(
                 f"Start time {self.starttime} is not in the range of the solar input file"
             )
-        if not (df_solar["time"].min() <= self.endtime <= df_solar["time"].max()):
-            raise ValueError(f"End time {self.endtime} is not in the range of the solar input file")
+        if not (df_solar["time"].min() <= self.endtime - dt <= df_solar["time"].max()):
+            raise ValueError(f"End time {self.endtime - dt} is not in the range of the solar input file")
 
         # Solar data must contain time_utc since pysam requires time
         if "time_utc" not in df_solar.columns:
@@ -87,11 +102,11 @@ class SolarPySAM:
         df_solar = interpolate_df(df_solar, time_steps_all)
 
         # Can now save the input data as simple columns
-        self.year_array = df_solar["time_utc"].dt.year
-        self.month_array = df_solar["time_utc"].dt.month
-        self.day_array = df_solar["time_utc"].dt.day
-        self.hour_array = df_solar["time_utc"].dt.hour
-        self.minute_array = df_solar["time_utc"].dt.minute
+        self.year_array = df_solar["time_utc"].dt.year.values
+        self.month_array = df_solar["time_utc"].dt.month.values
+        self.day_array = df_solar["time_utc"].dt.day.values
+        self.hour_array = df_solar["time_utc"].dt.hour.values
+        self.minute_array = df_solar["time_utc"].dt.minute.values
         self.ghi_array = self._get_solar_data_array(df_solar, "Global Horizontal Irradiance")
         self.dni_array = self._get_solar_data_array(df_solar, "Direct Normal Irradiance")
         self.dhi_array = self._get_solar_data_array(df_solar, "Diffuse Horizontal Irradiance")
