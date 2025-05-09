@@ -14,6 +14,14 @@ from hercules.utilities import interpolate_df
 
 class SolarPySAM:
     def __init__(self, input_dict, dt, starttime, endtime):
+        """
+        Initializes the SolarPySAM class.
+        Args:
+            input_dict (dict): Input dictionary containing parameters for the solar simulation.
+            dt (float): Time step for the simulation.
+            starttime (float): Start time for the simulation.
+            endtime (float): End time for the simulation.
+        """
         # Check if log_file_name is defined in the input_dict
         if "log_file_name" in input_dict:
             self.log_file_name = input_dict["log_file_name"]
@@ -209,6 +217,15 @@ class SolarPySAM:
         self.needed_inputs = {}
 
     def _get_solar_data_array(self, df_, column_substring):
+        """
+        Retrieves the values of the first column in the DataFrame whose name contains the specified substring.
+        Args:
+            df_ (pd.DataFrame): The DataFrame to search for the column.
+            column_substring (str): The substring to look for in the column names.
+        Returns:
+            np.ndarray: The values of the matching column as a NumPy array.
+        """
+
         for column in df_.columns:
             if column_substring in column:
                 return df_[column].values
@@ -223,14 +240,18 @@ class SolarPySAM:
 
     def control(self, power_setpoint_mw=None):
         """
-        Low-level controller to enforce PV plant power setpoints
-        Notes:
-        - Currently applies uniform curtailment to entire plant
-        - DC power output is not controlled because it is not used elsewhere in the code
+        Controls the PV plant power output to meet a specified setpoint.
 
-        Inputs
-        - power_setpoint_mw: [MW] the desired total PV plant output
+        This low-level controller enforces power setpoints for the PV plant by
+        applying uniform curtailment across the entire plant. Note that DC power
+        output is not controlled as it is not utilized elsewhere in the code.
+
+        Args:
+            power_setpoint_mw (float, optional): Desired total PV plant output in MW.
+                If None, no control is applied.
+
         """
+
         # modify power output based on setpoint
         if power_setpoint_mw is not None:
             if self.verbose:
