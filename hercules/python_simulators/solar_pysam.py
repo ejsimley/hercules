@@ -218,7 +218,7 @@ class SolarPySAM:
 
     def _get_solar_data_array(self, df_, column_substring):
         """
-        Retrieves the values of the first column in the DataFrame whose name contains the specified substring.
+        Get the values of the first column in the df whose name contains the specified substring.
         Args:
             df_ (pd.DataFrame): The DataFrame to search for the column.
             column_substring (str): The substring to look for in the column names.
