@@ -55,7 +55,9 @@ class SolarPySAM:
         #    or
         # 2. There is a weather_data_input dictionary and either:
         #       solar_input_filename is not in input_dict or is none
-        if ("solar_input_filename" in input_dict) and (input_dict["solar_input_filename"] is not None):
+        if ("solar_input_filename" in input_dict) and (
+            input_dict["solar_input_filename"] is not None
+        ):
             if "weather_data_input" in input_dict:
                 raise ValueError(
                     "Cannot have both solar_input_filename and weather_data_input in input_dict"
@@ -77,7 +79,6 @@ class SolarPySAM:
             else:
                 df_solar = pd.DataFrame.from_dict(input_dict["weather_data_input"])
 
-
         # Make sure the df_wi contains a column called "time"
         if "time" not in df_solar.columns:
             raise ValueError("Solar input file must contain a column called 'time'")
@@ -88,7 +89,9 @@ class SolarPySAM:
                 f"Start time {self.starttime} is not in the range of the solar input file"
             )
         if not (df_solar["time"].min() <= self.endtime - dt <= df_solar["time"].max()):
-            raise ValueError(f"End time {self.endtime - dt} is not in the range of the solar input file")
+            raise ValueError(
+                f"End time {self.endtime - dt} is not in the range of the solar input file"
+            )
 
         # Solar data must contain time_utc since pysam requires time
         if "time_utc" not in df_solar.columns:
@@ -190,7 +193,7 @@ class SolarPySAM:
         system_model.AdjustmentFactors.adjust_constant = 0
         system_model.AdjustmentFactors.dc_adjust_constant = 0
 
-        #TODO: What does this do?
+        # TODO: What does this do?
         for k, v in self.model_params.items():
             try:
                 system_model.value(k, v)
