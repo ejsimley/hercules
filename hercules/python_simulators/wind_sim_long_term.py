@@ -130,14 +130,15 @@ class WindSimLongTerm:
         self.floris_derating_threshold = 10  # kW
 
         # TODO Make this settable in the future
-        # TODO make this in seconds and convert to array indices internally
         # Establish the width of the FLORIS averaging window
         self.floris_time_window_width_s = 30
         self.floris_time_window_width_steps = int(self.floris_time_window_width_s / self.dt)
+        self.floris_time_window_width_steps = max(1, self.floris_time_window_width_steps)
 
         # How often to update the wake deficits
         self.floris_update_time_s = 10
         self.floris_update_steps = int(self.floris_update_time_s / self.dt)
+        self.floris_update_steps = max(1, self.floris_update_steps)
 
         # Declare the derating buffer to hold previous derating commands
         self.derating_buffer = (
