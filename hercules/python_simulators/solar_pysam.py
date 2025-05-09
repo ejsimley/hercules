@@ -190,6 +190,16 @@ class SolarPySAM:
         system_model.AdjustmentFactors.adjust_constant = 0
         system_model.AdjustmentFactors.dc_adjust_constant = 0
 
+        #TODO: What does this do?
+        for k, v in self.model_params.items():
+            try:
+                system_model.value(k, v)
+            except Exception as e:
+                error_type = type(e).__name__
+                error_message = str(e)
+                print(f"Warning: pysam error with parameter '{k}': {error_type} - {error_message}")
+                print("Warning: continuing the simulation despite warning")
+
         # Save the system model
         self.system_model = system_model
 
