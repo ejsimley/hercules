@@ -126,8 +126,10 @@ def interpolate_df(df, new_time):
         pd.DataFrame: A new DataFrame containing the 'time' column with values
         from `new_time` and the interpolated data columns.
     """
-
-    result = pd.DataFrame({"time": new_time})
+    # Create dictionary to store all columns
+    result_dict = {"time": new_time}
+    
+    # Populate the dictionary with interpolated values for each column
     for col in df.columns:
         if col != "time":
             # Check if column contains datetime values
@@ -137,9 +139,12 @@ def interpolate_df(df, new_time):
                 f = interp1d(df["time"].values, timestamps, bounds_error=True)
                 interpolated_timestamps = f(new_time)
                 # Convert timestamps back to datetime
-                result[col] = pd.to_datetime(interpolated_timestamps, unit="s", utc=True)
+                result_dict[col] = pd.to_datetime(interpolated_timestamps, unit="s", utc=True)
             else:
                 # Standard interpolation for non-datetime columns
                 f = interp1d(df["time"].values, df[col].values, bounds_error=True)
-                result[col] = f(new_time)
+                result_dict[col] = f(new_time)
+    
+    # Create DataFrame from the dictionary (all columns at once)
+    result = pd.DataFrame(result_dict)
     return result
