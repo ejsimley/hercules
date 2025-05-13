@@ -128,7 +128,7 @@ def interpolate_df(df, new_time):
     """
     # Create dictionary to store all columns
     result_dict = {"time": new_time}
-    
+
     # Populate the dictionary with interpolated values for each column
     for col in df.columns:
         if col != "time":
@@ -144,7 +144,7 @@ def interpolate_df(df, new_time):
                 # Standard interpolation for non-datetime columns
                 f = interp1d(df["time"].values, df[col].values, bounds_error=True)
                 result_dict[col] = f(new_time)
-    
+
     # Create DataFrame from the dictionary (all columns at once)
     result = pd.DataFrame(result_dict)
     return result
